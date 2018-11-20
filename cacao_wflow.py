@@ -14,7 +14,6 @@ CACAO_VERSION = '0.3.1'
 
 def __main__():
    
-
    program_description = "cacao - assessment of sequencing coverage at pathogenic and actionable loci in cancer"
    program_options = "   --query_aln <QUERY_ALIGNMENT>\n   --track_directory <TRACK_DIR>\n   --output_dir <OUTPUT_DIR>\n   --genome_assembly " + \
       "<grch37|grch38>\n   --sample_id <SAMPLE_ID>\n   --mode <hereditary|somatic|any>"
@@ -142,7 +141,6 @@ def __main__():
                       cacao_py_nonpath_params + \
                       ' --no-docker'
       run_cacao_cmd = cacao_command
->>>>>>> Condarize
 
    check_subprocess(run_cacao_cmd)
    logger.info('Finished')
