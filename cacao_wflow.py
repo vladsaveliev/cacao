@@ -32,7 +32,7 @@ def __main__():
    optional.add_argument('--query_target', dest = "query_target", help="BED file with genome target regions subject to sequencing")
    optional.add_argument('--is_rna',action = "store_true",help='By default, CACAO assumes a BAM file coming from DNA sequencing. Indicate whether the alignment is from RNA-seq with this flag')
    optional.add_argument('--force_overwrite', action = "store_true", help='By default, the script will fail with an error if any output file already exists. You can force the overwrite of existing result files by using this flag')
-   #parser.add_argument('--no-docker', action='store_true', dest='no_docker', default=False, help='Run the cacao workflow in a non-Docker mode (see install_no_docker/ folder for instructions')
+   optional.add_argument('--no-docker', action='store_true', dest='no_docker', default=False, help='Run the workflow in a non-Docker mode (see install_no_docker/ folder for instructions')
    optional.add_argument('--version', action='version', version='%(prog)s ' + str(CACAO_VERSION))
    required.add_argument('--query_aln',help='Query alignment file (BAM/CRAM)')
    required.add_argument('--track_dir', help='Directory with BED tracks of pathogenic/actionable cancer loci for grch37/grch38')
@@ -81,6 +81,16 @@ def __main__():
 
    host_directories = verify_input_files(arg_dict, logger)
 
+   if args.no_docker:
+      docker_image_version = None
+   else:
+      # check that script and Docker image version correspond
+      check_docker_command = 'docker images -q ' + str(docker_image_version)
+      output = subprocess.check_output(str(check_docker_command), stderr=subprocess.STDOUT, shell=True)
+      if(len(output) == 0):
+         err_msg = 'Docker image ' + str(docker_image_version) + ' does not exist, pull image from Dockerhub (docker pull ' + str(docker_image_version) + ')'
+         pcgr_error_message(err_msg,logger)
+
    input_aln_host = "NA"
    input_aln_index_host = "NA"
    input_target_host = "NA"
@@ -90,21 +100,51 @@ def __main__():
       input_aln_index_host = os.path.join(host_directories['input_alndir'], host_directories['input_aln_index_basename']) 
 
    logger.info('Running cacao workflow - assessment of coverage at actionable and pathogenic loci')
-   docker_command = 'docker run --rm -ti -w=/workdir/output -v=' + str(host_directories['track_dir']) + ':/workdir/tracks -v=' + \
-      str(host_directories['output_dir']) + ':/workdir/output -v=' + str(input_aln_host) + ':/workdir/query.bam -v=' + \
-      str(input_aln_index_host) + ':/workdir/query.bam.bai ' + str(docker_image_version)
-   if host_directories['input_target_dir'] != "NA" and host_directories['input_target_basename'] != "NA":
-      input_target_host = os.path.join(host_directories['input_target_dir'], host_directories['input_target_basename'])
-      docker_command = 'docker run --rm -ti -w=/workdir/output -v=' + str(host_directories['track_dir']) + ':/workdir/tracks -v=' + \
-         str(host_directories['output_dir']) + ':/workdir/output -v=' + str(input_aln_host) + ':/workdir/query.bam -v=' + \
-         str(input_aln_index_host) + ':/workdir/query.bam.bai -v' + str(input_target_host) + ':/workdir/query_target.bed ' + str(docker_image_version)
-   cacao_command = '/cacao.py /workdir/query.bam /workdir/query_target.bed ' + str(host_directories['input_aln_basename']) + ' ' + \
-      str(host_directories['input_target_basename']) + ' /workdir/tracks /workdir/output ' + str(arg_dict['genome_assembly']) + ' ' + \
-      str(arg_dict['mode']) + ' ' + str(arg_dict['sample_id']) + ' ' + str(arg_dict['mapq']) + ' ' + str(arg_dict['threads']) + ' ' + \
-      str(arg_dict['callability_levels_germline']) + ' ' + str(arg_dict['callability_levels_somatic'])
-   run_cacao_cmd = str(docker_command) + ' sh -c "' + str(cacao_command) + '"'
-   check_subprocess(run_cacao_cmd)
 
+   cacao_py_nonpath_params = ' '.join(map(str, [
+       args.genome_assembly,
+       args.mode,
+       args.sample_id,
+       args.mapq,
+       args.threads,
+       args.callability_levels_germline,
+       args.callability_levels_somatic]))
+
+   if docker_image_version:
+      cacao_command = '/cacao.py ' \
+                      '/workdir/query.bam ' \
+                      '/workdir/query_target.bed ' + \
+                      str(host_directories['input_aln_basename']) + ' ' + \
+                      str(host_directories['input_target_basename']) + ' ' + \
+                      '/workdir/tracks ' + \
+                      '/workdir/output ' + \
+                      cacao_py_nonpath_params
+      docker_command = 'docker run --rm -ti -w=/workdir/output ' + \
+                       '-v=' + str(host_directories['track_dir']) + ':/workdir/tracks ' + \
+                       '-v=' + str(host_directories['output_dir']) + ':/workdir/output ' + \
+                       '-v=' + str(input_aln_host) + ':/workdir/query.bam ' + \
+                       '-v=' + str(input_aln_index_host) + ':/workdir/query.bam.bai '
+      if host_directories['input_target_dir'] != "NA" and host_directories['input_target_basename'] != "NA":
+         input_target_host = os.path.join(host_directories['input_target_dir'], host_directories['input_target_basename'])
+         docker_command += '-v' + str(input_target_host) + ':/workdir/query_target.bed '
+      docker_command += str(docker_image_version)
+
+      run_cacao_cmd = str(docker_command) + ' sh -c "' + str(cacao_command) + '"'
+
+   else:
+      cacao_command = 'cacao.py ' + \
+                      input_aln_host + ' ' + \
+                      input_target_host + ' ' + \
+                      host_directories['input_aln_basename'] + ' ' + \
+                      host_directories['input_target_basename'] + ' ' + \
+                      host_directories['track_dir'] + ' ' + \
+                      str(host_directories['output_dir']) + ' ' + \
+                      cacao_py_nonpath_params + \
+                      ' --no-docker'
+      run_cacao_cmd = cacao_command
+>>>>>>> Condarize
+
+   check_subprocess(run_cacao_cmd)
    logger.info('Finished')
 
 def error_message(message, logger):
