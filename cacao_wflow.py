@@ -23,6 +23,7 @@ def __main__():
    parser.add_argument('--force_overwrite', action = "store_true", help='By default, the script will fail with an error if any output file already exists. You can force the overwrite of existing result files by using this flag')
    #parser.add_argument('--no-docker', action='store_true', dest='no_docker', default=False, help='Run the cacao workflow in a non-Docker mode (see install_no_docker/ folder for instructions')
    parser.add_argument('--version', action='version', version='%(prog)s ' + str(cacao_version))
+   parser.add_argument('--no-docker', action='store_true', dest='no_docker', default=False, help='Run the workflow in a non-Docker mode (see install_no_docker/ folder for instructions')
    parser.add_argument('query_alignment_fname',help='Alignment file (BAM/CRAM)')
    parser.add_argument('track_directory', help='Directory with BED tracks of pathogenic/actionable cancer loci for grch37/grch38')
    parser.add_argument('output_directory', help='Output directory')
@@ -36,6 +37,16 @@ def __main__():
    logger.info('Start')
    host_directories = verify_arguments(args.query_alignment_fname, args.track_directory, args.output_directory, args.callability_levels_germline, args.callability_levels_somatic, args.force_overwrite, logger)
 
+   if args.no_docker:
+      docker_image_version = None
+   else:
+      # check that script and Docker image version correspond
+      check_docker_command = 'docker images -q ' + str(docker_image_version)
+      output = subprocess.check_output(str(check_docker_command), stderr=subprocess.STDOUT, shell=True)
+      if(len(output) == 0):
+         err_msg = 'Docker image ' + str(docker_image_version) + ' does not exist, pull image from Dockerhub (docker pull ' + str(docker_image_version) + ')'
+         pcgr_error_message(err_msg,logger)
+
    input_aln_host = "NA"
    input_aln_index_host = "NA"
    if host_directories['input_alndir'] != 'NA':
@@ -44,9 +55,15 @@ def __main__():
       input_aln_index_host = os.path.join(host_directories['input_alndir'], host_directories['input_aln_index_basename']) 
 
    logger.info('Running cacao workflow - assessment of coverage at actionable and pathogenic loci')
-   docker_command = 'docker run --rm -ti -w=/workdir/output -v=' + str(host_directories['track_dir']) + ':/workdir/tracks -v=' + str(host_directories['output_dir']) + ':/workdir/output -v=' + str(input_aln_host) + ':/workdir/query.bam -v=' + str(input_aln_index_host) + ':/workdir/query.bam.bai ' + str(docker_image_version)
-   cacao_command = '/cacao.py /workdir/query.bam /workdir/tracks /workdir/output ' + str(args.genome_assembly) + ' ' + str(args.mode) + ' ' + str(args.sample_id) + ' ' + str(args.mapq) + ' ' + str(args.threads) + ' ' + str(args.callability_levels_germline) + ' ' + str(args.callability_levels_somatic)
-   run_cacao_cmd = str(docker_command) + ' sh -c "' + str(cacao_command) + '"'
+
+   if docker_image_version:
+      cacao_command = '/cacao.py /workdir/query.bam /workdir/tracks /workdir/output ' + str(args.genome_assembly) + ' ' + str(args.mode) + ' ' + str(args.sample_id) + ' ' + str(args.mapq) + ' ' + str(args.threads) + ' ' + str(args.callability_levels_germline) + ' ' + str(args.callability_levels_somatic)
+      docker_command = 'docker run --rm -ti -w=/workdir/output -v=' + str(host_directories['track_dir']) + ':/workdir/tracks -v=' + str(host_directories['output_dir']) + ':/workdir/output -v=' + str(input_aln_host) + ':/workdir/query.bam -v=' + str(input_aln_index_host) + ':/workdir/query.bam.bai ' + str(docker_image_version)
+      run_cacao_cmd = str(docker_command) + ' sh -c "' + str(cacao_command) + '"'
+   else:
+      cacao_command = f'cacao.py ' + input_aln_host + ' ' + host_directories['track_dir'] + ' ' + str(host_directories['output_dir']) + ' ' + str(args.genome_assembly) + ' ' + str(args.mode) + ' ' + str(args.sample_id) + ' ' + str(args.mapq) + ' ' + str(args.threads) + ' ' + str(args.callability_levels_germline) + ' ' + str(args.callability_levels_somatic) + ' --no-docker'
+      run_cacao_cmd = cacao_command
+
    check_subprocess(run_cacao_cmd)
 
    logger.info('Finished')

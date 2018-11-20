@@ -1,0 +1,83 @@
+{% set name = 'cacao' %}
+{% set version = os.environ.get('TRAVIS_TAG', '').replace('v.', '').replace('v', '') or 'dev' %}
+
+package:
+  name: {{ name }}
+  version: {{ version }}
+
+source:
+  path: ../../
+
+build:
+  number: 0
+  rpaths:
+    - lib/
+    - lib/R/library/
+
+requirements:
+  build:
+    - curl
+    - unzip
+    - r-base
+    - r-devtools
+    - tar
+    - python
+    - toml
+    - pip
+    - setuptools
+    #
+    ### Need R modules to install cacao R package build-time
+    - libgfortran-ng  # to fix -libgfortran error, thanks @pdiakumis
+    - r-rmarkdown
+    - r-configr
+    - r-dplyr
+    - r-stringr
+    - r-tidyr
+    - r-magrittr
+    - r-htmltools
+    - r-plotly
+    - r-ggplot2
+    - r-dt
+    - r-summarywidget
+    - r-rlogging
+    - r-crosstalk
+
+  run:
+    - bedtools
+    - htslib
+    - numpy
+    - cython
+    - scipy
+    - pandas
+    - cyvcf2
+    - toml
+    - samtools
+    - mosdepth
+    - tabix
+    - pandoc
+    - libgfortran-ng  # to fix -libgfortran error, thanks @pdiakumis
+    - r-rmarkdown
+    - r-configr
+    - r-dplyr
+    - r-stringr
+    - r-tidyr
+    - r-magrittr
+    - r-htmltools
+    - r-plotly
+    - r-ggplot2
+    - r-dt
+    - r-summarywidget
+    - r-rlogging
+    - r-crosstalk
+
+test:
+  commands:
+    - cacao_wflow.py --version
+    - cacao.py --help
+    - '$R -e "library(cacao)"'
+
+about:
+  home: https://github.com/sigven/cacao
+  license: MIT
+  summary: Callable Cancer Loci - assessment of sequencing coverage for actionable and pathogenic loci in cancer
+
