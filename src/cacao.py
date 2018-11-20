@@ -95,7 +95,7 @@ def __main__():
    cacao_report_parameters.append(str(cacao_version))
    cacao_report_parameters.append(str(args.output_directory))
 
-   report_R_command = ("/" if not no_docker else "") + "cacao.R " + " ".join(cacao_report_parameters)
+   report_R_command = ("/" if not args.no_docker else "") + "cacao.R " + " ".join(cacao_report_parameters)
    check_subprocess(report_R_command)
 
    logger.info('Finished')
