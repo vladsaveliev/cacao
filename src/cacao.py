@@ -28,6 +28,7 @@ def __main__():
    parser.add_argument('callability_levels_germline', default="0:10:100", help="Intervals of sequencing depth denoting e.g. NO_COVERAGE (0), LOW_COVERAGE (1-9), CALLABLE (10-99), HIGH_COVERAGE (>= 100)")
    parser.add_argument('callability_levels_somatic', default="0:30:200", help="Intervals of sequencing depth denoting e.g. NO_COVERAGE (0), LOW_COVERAGE (1-29), CALLABLE (30-199), HIGH_COVERAGE (>= 200)")
    parser.add_argument('--prbase', action = "store_true", help='By default, the cacao workflow will only assess coverage at clinically relevant variant loci in cancer. This option enables a full coverage calculation of the alignment (will increase runtime substantially)')
+   parser.add_argument('--no-docker', action='store_true', dest='no_docker', default=False, help='Run the workflow in a non-Docker mode (see install_no_docker/ folder for instructions')
 
 
    args = parser.parse_args()
@@ -94,7 +95,7 @@ def __main__():
    cacao_report_parameters.append(str(cacao_version))
    cacao_report_parameters.append(str(args.output_directory))
 
-   report_R_command = "/cacao.R " + " ".join(cacao_report_parameters)
+   report_R_command = ("/" if not no_docker else "") + "cacao.R " + " ".join(cacao_report_parameters)
    check_subprocess(report_R_command)
 
    logger.info('Finished')
