@@ -163,6 +163,7 @@ htmltools::br()
 
 
 ```{r gene_header, echo = F, fig.width=12, fig.height=2, eval=eval_section[['hereditary']]}
+library(scales)
 
 cat('### Gene distribution')
 
