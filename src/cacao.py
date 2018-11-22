@@ -37,9 +37,9 @@ def __main__():
    logger = getlogger('cacao-coverage-assessment')
    coverage_bed_track = "NA"
    coverage_tsv_tracks = {}
+
    sample_postfix = "_" + str(args.genome_assembly) + "_coverage_cacao"
    sample_postfix_prbase = "_prbase_" + str(args.genome_assembly) + "_coverage_cacao"
-
 
    for m in ['hereditary','somatic_actionable','somatic_hotspot']:       
       coverage_tsv_tracks[m] = os.path.join(str(args.bed_track_directory),track_info['tsv'][m])
@@ -54,8 +54,22 @@ def __main__():
    if track_info['cacao_loci_bed'] != "NA":
       logger.info("Determination of sequencing coverage with https://github.com/brentp/mosdepth:")
       logger.info("Loci subject to coverage assessment: " + str(coverage_description))
-      mosdepth_cmd = 'mosdepth --no-per-base --by ' + os.path.join(str(args.bed_track_directory),str(track_info['cacao_loci_bed'])) + ' --mapq ' + str(args.mapq) + ' --threads ' + str(args.threads) + ' ' + str(args.sample_id) + str(sample_postfix) + ' ' + str(args.aln)
-      mosdepth_prbase_cmd = 'mosdepth --mapq ' + str(args.mapq) + ' --threads ' + str(args.threads) + ' ' + str(args.sample_id) + str(sample_postfix_prbase) + ' ' + str(args.aln)
+      out_prefix = os.path.join(args.output_directory, args.sample_id)
+      regions_bed = os.path.join(str(args.bed_track_directory), str(track_info['cacao_loci_bed']))
+      mosdepth_cmd = \
+         'mosdepth ' \
+         '--no-per-base ' \
+         '--by ' + regions_bed + \
+         ' --mapq ' + str(args.mapq) + \
+         ' --threads ' + str(args.threads) + ' ' + \
+         out_prefix + str(sample_postfix) + ' ' + \
+         str(args.aln)
+      mosdepth_prbase_cmd = \
+         'mosdepth ' \
+         '--mapq ' + str(args.mapq) + \
+         ' --threads ' + str(args.threads) + ' ' + \
+         out_prefix + str(sample_postfix_prbase) + ' ' + \
+         str(args.aln)
       logger.info('command: ' + str(mosdepth_cmd))
       check_subprocess(mosdepth_cmd)
       if args.prbase is True:
@@ -77,7 +91,6 @@ def __main__():
       cp_cmd = 'cp ' + str(coverage_bed_track) + ' ' + str(coverage_bed_track_target)
       check_subprocess(cp_cmd)
 
-    
    cacao_report_parameters = []
    cacao_report_parameters.append(coverage_bed_track_target)
    cacao_report_parameters.append(args.host_name_aln)
