@@ -82,7 +82,7 @@ cat("### Global distribution\n")
 ```
 
 ```{r global_dist, echo = F, fig.width=12, fig.height=2, eval=eval_hereditary_loci}
-
+library(scales)
 
 p <- ggplot2::ggplot(ggplot2::aes(x="CALLABILITY", y=PERCENT, fill = CALLABILITY), data = cacao_report[['global_distribution']][['hereditary']]) +
   ggplot2::geom_bar(stat = 'identity') +
