@@ -47,7 +47,8 @@ def __main__():
            coverage_description = "somatic mutation hotspots - driver events in cancer"
        if track_info['bed'][m] != "NA":
           logger.info("Determination of coverage in target regions with https://github.com/brentp/mosdepth: " + str(coverage_description))
-          mosdepth_cmd = 'mosdepth --no-per-base --by ' + os.path.join(str(args.bed_track_directory),str(track_info['bed'][m])) + ' --mapq ' + str(args.mapq) + ' --threads ' + str(args.threads) + ' ' + str(args.sample_id) + str(sample_postfix) + ' ' + str(args.aln)
+          prefix = os.path.join(args.output_directory, args.sample_id + str(sample_postfix))
+          mosdepth_cmd = 'mosdepth --no-per-base --by ' + os.path.join(str(args.bed_track_directory),str(track_info['bed'][m])) + ' --mapq ' + str(args.mapq) + ' --threads ' + str(args.threads) + ' ' + prefix + ' ' + str(args.aln)
           logger.info('command: ' + str(mosdepth_cmd))
           check_subprocess(mosdepth_cmd)
        bed_coverage_track_gz = str(args.sample_id) + str(sample_postfix) + '.regions.bed.gz'
