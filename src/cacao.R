@@ -27,8 +27,8 @@ genome_assembly <- as.character(args[12])
 cacao_version <- as.character(args[13])
 out_dir <- as.character(args[14])
 
-fname_json <- paste0(sample_name,"_", genome_assembly,"_coverage_cacao.json")
-fname_html <- paste0(sample_name,"_", genome_assembly,"_coverage_cacao.html")
+fname_json <- paste0(out_dir, '/', sample_name,"_", genome_assembly,"_coverage_cacao.json")
+fname_html <- paste0(out_dir, '/', sample_name,"_", genome_assembly,"_coverage_cacao.html")
 
 rlogging::SetTimeStampFormat(ts.format="%Y-%m-%d %H:%M:%S ")
 rlogging::SetLogFile(NULL)
@@ -100,11 +100,17 @@ for(c in c('hereditary','somatic_actionable','somatic_hotspot')){
 }
 cacao_json <- jsonlite::toJSON(cacao_content_json, pretty=T,na='string',null = 'null',force=T)
 write(cacao_json, fname_json)
-system(paste0('rm -f ',sample_name,'.mosdepth*dist* '), intern = F)
+#system(paste0('rm -f ',sample_name,'.mosdepth*dist* '), intern = F)
 
 rlogging::message('------')
 rlogging::message("Rendering HTML report with rmarkdown")
 
-rmarkdown::render(system.file("templates","cacao_report.Rmd", package="cacao"), output_format = rmarkdown::html_document(theme = "default", toc = T, toc_depth = 3, toc_float = T, number_sections = F), output_file = fname_html, output_dir = out_dir, clean = T, intermediates_dir = out_dir, quiet = T)
-
+rmarkdown::render(
+  system.file("templates","cacao_report.Rmd", package="cacao"), 
+  output_format = rmarkdown::html_document(theme = "default", toc = T, toc_depth = 3, toc_float = T, number_sections = F), 
+  output_file = fname_html, 
+  output_dir = out_dir, 
+  clean = T, 
+  intermediates_dir = out_dir, 
+  quiet = T)
 
