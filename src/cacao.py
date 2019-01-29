@@ -75,15 +75,15 @@ def __main__():
       check_subprocess(mosdepth_cmd)
       if args.prbase is True:
          check_subprocess(mosdepth_prbase_cmd)
-   bed_coverage_track_gz = str(args.sample_id) + str(sample_postfix) + '.regions.bed.gz'
-   coverage_bed_track = os.path.join(str(args.output_directory),str(args.sample_id) + str(sample_postfix) + '.regions.bed')
-   if os.path.exists(bed_coverage_track_gz) and os.path.getsize(bed_coverage_track_gz) > 0:
-      logger.info('Decompressing BED file (' + str(bed_coverage_track_gz) + ') with coverage pr. loci')
-      check_subprocess('bgzip -dc ' + str(bed_coverage_track_gz) + ' > ' + coverage_bed_track)
+   coverage_bed_track =    os.path.join(str(args.output_directory), str(args.sample_id) + str(sample_postfix) + '.regions.bed')
+   coverage_bed_track_gz = coverage_bed_track + '.gz'
+   if os.path.exists(coverage_bed_track_gz) and os.path.getsize(coverage_bed_track_gz) > 0:
+      logger.info('Decompressing BED file (' + str(coverage_bed_track_gz) + ') with coverage pr. loci')
+      check_subprocess('bgzip -dc ' + str(coverage_bed_track_gz) + ' > ' + coverage_bed_track)
    else:
-      error_message("Resulting mosdepth coverage file " + str(bed_coverage_track_gz) + "is non-existent or empty", logger)
+      error_message("Resulting mosdepth coverage file " + str(coverage_bed_track_gz) + "is non-existent or empty", logger)
 
-   coverage_bed_track_target = os.path.join(str(args.output_directory),str(args.sample_id) + str(sample_postfix) + '.regions_target.bed')
+   coverage_bed_track_target = os.path.join(str(args.output_directory), str(args.sample_id) + str(sample_postfix) + '.regions_target.bed')
    if track_info['query_target_bed'] != "NA":
       logger.info('Limiting coverage assessment to query target regions')
       annotate_target_bed = 'bedtools annotate -i ' + str(coverage_bed_track) + ' -files ' + str(track_info['query_target_bed'] ) + ' > ' + str(coverage_bed_track_target)
@@ -92,21 +92,22 @@ def __main__():
       cp_cmd = 'cp ' + str(coverage_bed_track) + ' ' + str(coverage_bed_track_target)
       check_subprocess(cp_cmd)
 
-   cacao_report_parameters = []
-   cacao_report_parameters.append(coverage_bed_track_target)
-   cacao_report_parameters.append(args.host_name_aln)
-   cacao_report_parameters.append(args.host_name_target)
-   cacao_report_parameters.append(coverage_tsv_tracks['hereditary'])
-   cacao_report_parameters.append(coverage_tsv_tracks['somatic_actionable'])
-   cacao_report_parameters.append(coverage_tsv_tracks['somatic_hotspot'])
-   cacao_report_parameters.append(str(args.sample_id))
-   cacao_report_parameters.append(str(args.mode))
-   cacao_report_parameters.append(str(args.callability_levels_germline))
-   cacao_report_parameters.append(str(args.callability_levels_somatic))
-   cacao_report_parameters.append(str(args.mapq))
-   cacao_report_parameters.append(str(args.genome_assembly))
-   cacao_report_parameters.append(str(cacao_version))
-   cacao_report_parameters.append(str(args.output_directory))
+   cacao_report_parameters = [
+      coverage_bed_track_target,
+      args.host_name_aln,
+      args.host_name_target,
+      coverage_tsv_tracks['hereditary'],
+      coverage_tsv_tracks['somatic_actionable'],
+      coverage_tsv_tracks['somatic_hotspot'],
+      str(args.sample_id),
+      str(args.mode),
+      str(args.callability_levels_germline),
+      str(args.callability_levels_somatic),
+      str(args.mapq),
+      str(args.genome_assembly),
+      str(cacao_version),
+      str(args.output_directory),
+   ]
 
    report_R_command = ("/" if not args.no_docker else "") + "cacao.R " + " ".join(cacao_report_parameters)
    check_subprocess(report_R_command)
