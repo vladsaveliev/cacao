@@ -10,7 +10,6 @@ output:
     toc_depth: 3
     fig_width: 5
     fig_height: 4
-
 ---
 
 ```{r global_options, include=FALSE}
@@ -83,7 +82,7 @@ if(cacao_report[['eval']][['hereditary']] == T && cacao_report[['eval']][['somat
 if(cacao_report[['mode']] == 'any'){
   mode <- 'Hereditary cancer AND actionable somatic loci AND somatic hotspots'
 }
-if(cacao_report[['mode']] == 'hereditary'){
+if(cacao_report[['mode']] %in% c('hereditary', 'germline')){
   mode <- 'Hereditary cancer'
 }
 if(cacao_report[['mode']] == 'somatic'){
@@ -107,7 +106,6 @@ subchunkify <- function(g, fig_height=25, fig_width=12) {
   
   cat(knitr::knit(text = knitr::knit_expand(text = sub_chunk), quiet = TRUE))
 }
-
 
 ```
 
@@ -196,23 +194,27 @@ cat("#### High coverage\n")
 library(summarywidget)
 library(crosstalk)
 
-loci_high_coverage <- crosstalk::SharedData$new(cacao_report[['loci']][['hereditary']][['high']])
-crosstalk::bscols(
-  list(
-    crosstalk::filter_select("SYMBOL", "Gene",loci_high_coverage, ~SYMBOL),
-    crosstalk::filter_select("NAME", "Locus name", loci_high_coverage, ~NAME)
-  ),
-  list(
-    crosstalk::filter_select("PHENOTYPE", "ClinVar phenotype(s)", loci_high_coverage, ~PHENOTYPE),
-    crosstalk::filter_select("LOCUSTYPE", "Type of locus", loci_high_coverage, ~LOCUSTYPE)
-
+rows = cacao_report[['loci']][['hereditary']][['high']]
+if (nrow(rows) == 0) {
+  cat("No regions to report within the high coverage range")  
+} else {
+  loci_high_coverage <- crosstalk::SharedData$new(rows)
+  crosstalk::bscols(
+    list(
+      crosstalk::filter_select("SYMBOL", "Gene",loci_high_coverage, ~SYMBOL),
+      crosstalk::filter_select("NAME", "Locus name", loci_high_coverage, ~NAME)
+    ),
+    list(
+      crosstalk::filter_select("PHENOTYPE", "ClinVar phenotype(s)", loci_high_coverage, ~PHENOTYPE),
+      crosstalk::filter_select("LOCUSTYPE", "Type of locus", loci_high_coverage, ~LOCUSTYPE)
+  
+    )
   )
-)
-
-crosstalk::bscols(
-  DT::datatable(loci_high_coverage, escape=F,extensions=c("Buttons","Responsive"), width = "100%",options=list(buttons = c('csv','excel'),dom = 'Bfrtip')) %>%
-  DT::formatStyle('CALLABILITY', color='white', backgroundColor = DT::styleEqual(c('NON_TARGET','NO_COVERAGE','LOW_COVERAGE','CALLABLE','HIGH_COVERAGE'), color_callability))
-)
+  crosstalk::bscols(
+    DT::datatable(loci_high_coverage, escape=F,extensions=c("Buttons","Responsive"), width = "100%",options=list(buttons = c('csv','excel'),dom = 'Bfrtip')) %>%
+    DT::formatStyle('CALLABILITY', color='white', backgroundColor = DT::styleEqual(c('NON_TARGET','NO_COVERAGE','LOW_COVERAGE','CALLABLE','HIGH_COVERAGE'), color_callability))
+  )
+}
 
 htmltools::br()
 
@@ -235,24 +237,27 @@ cat("#### Callable\n")
 library(summarywidget)
 library(crosstalk)
 
-loci_callable <- crosstalk::SharedData$new(cacao_report[['loci']][['hereditary']][['callable']])
-crosstalk::bscols(
-  list(
-    crosstalk::filter_select("SYMBOL", "Gene",loci_callable, ~SYMBOL),
-    crosstalk::filter_select("NAME", "Locus name", loci_callable, ~NAME)
-  ),
-  list(
-    crosstalk::filter_select("PHENOTYPE", "ClinVar phenotype(s)", loci_callable, ~PHENOTYPE),
-    crosstalk::filter_select("LOCUSTYPE", "Type of locus", loci_callable, ~LOCUSTYPE)
-
+rows = cacao_report[['loci']][['hereditary']][['callable']]
+if (nrow(rows) == 0) {
+  cat("No regions to report within the callable coverage range")  
+} else {
+  loci_callable <- crosstalk::SharedData$new(rows)
+  crosstalk::bscols(
+    list(
+      crosstalk::filter_select("SYMBOL", "Gene",loci_callable, ~SYMBOL),
+      crosstalk::filter_select("NAME", "Locus name", loci_callable, ~NAME)
+    ),
+    list(
+      crosstalk::filter_select("PHENOTYPE", "ClinVar phenotype(s)", loci_callable, ~PHENOTYPE),
+      crosstalk::filter_select("LOCUSTYPE", "Type of locus", loci_callable, ~LOCUSTYPE)
+  
+    )
   )
-)
-
-crosstalk::bscols(
-  DT::datatable(loci_callable, escape=F,extensions=c("Buttons","Responsive"), width = "100%",options=list(buttons = c('csv','excel'),dom = 'Bfrtip')) %>%
-  DT::formatStyle('CALLABILITY', color='white', backgroundColor = DT::styleEqual(c('NON_TARGET','NO_COVERAGE','LOW_COVERAGE','CALLABLE','HIGH_COVERAGE'), color_callability))
-)
-
+  crosstalk::bscols(
+    DT::datatable(loci_callable, escape=F,extensions=c("Buttons","Responsive"), width = "100%",options=list(buttons = c('csv','excel'),dom = 'Bfrtip')) %>%
+    DT::formatStyle('CALLABILITY', color='white', backgroundColor = DT::styleEqual(c('NON_TARGET','NO_COVERAGE','LOW_COVERAGE','CALLABLE','HIGH_COVERAGE'), color_callability))
+  )
+}
 htmltools::br()
 
 ```
@@ -271,24 +276,26 @@ library(crosstalk)
 
 cat("#### Low coverage\n")
 
-
-loci_low_coverage <- crosstalk::SharedData$new(cacao_report[['loci']][['hereditary']][['low']])
-crosstalk::bscols(
-  list(
-    crosstalk::filter_select("SYMBOL", "Gene",loci_low_coverage, ~SYMBOL),
-    crosstalk::filter_select("NAME", "Locus name", loci_low_coverage, ~NAME)
-  ),
-  list(
-    crosstalk::filter_select("PHENOTYPE", "ClinVar phenotype(s)", loci_low_coverage, ~PHENOTYPE),
-    crosstalk::filter_select("LOCUSTYPE", "Type of locus", loci_low_coverage, ~LOCUSTYPE)
-
+rows = cacao_report[['loci']][['hereditary']][['low']]
+if (nrow(rows) == 0) {
+  cat("No regions to report within the low coverage range")  
+} else {
+  loci_low_coverage <- crosstalk::SharedData$new(rows)
+  crosstalk::bscols(
+    list(
+      crosstalk::filter_select("SYMBOL", "Gene", loci_low_coverage, ~SYMBOL),
+      crosstalk::filter_select("NAME", "Locus name", loci_low_coverage, ~NAME)
+    ),
+    list(
+      crosstalk::filter_select("PHENOTYPE", "ClinVar phenotype(s)", loci_low_coverage, ~PHENOTYPE),
+      crosstalk::filter_select("LOCUSTYPE", "Type of locus", loci_low_coverage, ~LOCUSTYPE)
+    )
   )
-)
-
-crosstalk::bscols(
-  DT::datatable(loci_low_coverage, escape=F,extensions=c("Buttons","Responsive"), width = "100%",options=list(buttons = c('csv','excel'),dom = 'Bfrtip')) %>%
-  DT::formatStyle('CALLABILITY', color='white', backgroundColor = DT::styleEqual(c('NON_TARGET','NO_COVERAGE','LOW_COVERAGE','CALLABLE','HIGH_COVERAGE'), color_callability))
-)
+  crosstalk::bscols(
+    DT::datatable(loci_low_coverage, escape=F,extensions=c("Buttons","Responsive"), width = "100%",options=list(buttons = c('csv','excel'),dom = 'Bfrtip')) %>%
+    DT::formatStyle('CALLABILITY', color='white', backgroundColor = DT::styleEqual(c('NON_TARGET','NO_COVERAGE','LOW_COVERAGE','CALLABLE','HIGH_COVERAGE'), color_callability))
+  )
+}
 
 htmltools::br()
 
@@ -310,25 +317,27 @@ library(crosstalk)
 
 cat("#### No coverage\n")
 
-
-loci_no_coverage <- crosstalk::SharedData$new(cacao_report[['loci']][['hereditary']][['no_coverage']])
-crosstalk::bscols(
-  list(
-    crosstalk::filter_select("SYMBOL", "Gene",loci_no_coverage, ~SYMBOL),
-    crosstalk::filter_select("NAME", "Locus name", loci_no_coverage, ~NAME)
-  ),
-  list(
-    crosstalk::filter_select("PHENOTYPE", "ClinVar phenotype(s)", loci_no_coverage, ~PHENOTYPE),
-    crosstalk::filter_select("LOCUSTYPE", "Type of locus", loci_no_coverage, ~LOCUSTYPE)
-
+rows = cacao_report[['loci']][['hereditary']][['no_coverage']]
+if (nrow(rows) == 0) {
+  cat("No regions to report within the no-coverage range")  
+} else {
+  loci_no_coverage <- crosstalk::SharedData$new(rows)
+  crosstalk::bscols(
+    list(
+      crosstalk::filter_select("SYMBOL", "Gene", loci_no_coverage, ~SYMBOL),
+      crosstalk::filter_select("NAME", "Locus name", loci_no_coverage, ~NAME)
+    ),
+    list(
+      crosstalk::filter_select("PHENOTYPE", "ClinVar phenotype(s)", loci_no_coverage, ~PHENOTYPE),
+      crosstalk::filter_select("LOCUSTYPE", "Type of locus", loci_no_coverage, ~LOCUSTYPE)
+  
+    )
   )
-)
-
-crosstalk::bscols(
-  DT::datatable(loci_no_coverage, escape=F,extensions=c("Buttons","Responsive"), width = "100%",options=list(buttons = c('csv','excel'),dom = 'Bfrtip')) %>%
-  DT::formatStyle('CALLABILITY', color='white', backgroundColor = DT::styleEqual(c('NON_TARGET','NO_COVERAGE','LOW_COVERAGE','CALLABLE','HIGH_COVERAGE'), color_callability))
-)
-
+  crosstalk::bscols(
+    DT::datatable(loci_no_coverage, escape=F,extensions=c("Buttons","Responsive"), width = "100%",options=list(buttons = c('csv','excel'),dom = 'Bfrtip')) %>%
+    DT::formatStyle('CALLABILITY', color='white', backgroundColor = DT::styleEqual(c('NON_TARGET','NO_COVERAGE','LOW_COVERAGE','CALLABLE','HIGH_COVERAGE'), color_callability))
+  )
+}
 htmltools::br()
 
 ```
@@ -368,7 +377,6 @@ library(summarywidget)
 library(crosstalk)
 
 cat("#### Predictive\n")
-
 
 loci_predictive <- dplyr::filter(cacao_report[['loci']][['somatic_actionable']][['all']], EVIDENCE_TYPE == "Predictive")
 loci_predictive$COVERAGE <- as.numeric(loci_predictive$COVERAGE)
