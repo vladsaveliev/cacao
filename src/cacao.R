@@ -100,7 +100,7 @@ for(c in c('hereditary','somatic_actionable','somatic_hotspot')){
 }
 cacao_json <- jsonlite::toJSON(cacao_content_json, pretty=T,na='string',null = 'null',force=T)
 write(cacao_json, fname_json)
-#system(paste0('rm -f ',sample_name,'.mosdepth*dist* '), intern = F)
+system(paste0('rm -f ',sample_name,'.mosdepth*dist* '), intern = F)
 
 rlogging::message('------')
 rlogging::message("Rendering HTML report with rmarkdown")
