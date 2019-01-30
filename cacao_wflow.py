@@ -88,7 +88,7 @@ def __main__():
       output = subprocess.check_output(str(check_docker_command), stderr=subprocess.STDOUT, shell=True)
       if(len(output) == 0):
          err_msg = 'Docker image ' + str(docker_image_version) + ' does not exist, pull image from Dockerhub (docker pull ' + str(docker_image_version) + ')'
-         pcgr_error_message(err_msg,logger)
+         logger.error(err_msg)
 
    input_aln_host = "NA"
    input_aln_index_host = "NA"
