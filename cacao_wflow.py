@@ -127,7 +127,6 @@ def __main__():
          input_target_host = os.path.join(host_directories['input_target_dir'], host_directories['input_target_basename'])
          docker_command += '-v' + str(input_target_host) + ':/workdir/query_target.bed '
       docker_command += str(docker_image_version)
-
       run_cacao_cmd = str(docker_command) + ' sh -c "' + str(cacao_command) + '"'
 
    else:
