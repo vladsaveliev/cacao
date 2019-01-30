@@ -26,7 +26,7 @@ requirements:
     - pip
     - setuptools
     #
-    ### Need R modules to install cacao R package build-time
+    ### Need R modules to install the cacao R package during build-time
     - libgfortran-ng  # to fix -libgfortran error, thanks @pdiakumis
     - r-rmarkdown
     - r-configr
