@@ -42,6 +42,7 @@ requirements:
     - r-rlogging
     - r-crosstalk
     - r-forcats
+    - r-openssl >=1.1
 
   run:
     - bedtools
@@ -71,6 +72,7 @@ requirements:
     - r-rlogging
     - r-crosstalk
     - r-forcats
+    - r-openssl >=1.1
 
 test:
   commands:
