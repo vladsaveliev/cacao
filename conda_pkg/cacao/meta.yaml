@@ -41,6 +41,7 @@ requirements:
     - r-summarywidget
     - r-rlogging
     - r-crosstalk
+    - r-forcats
 
   run:
     - bedtools
@@ -69,6 +70,7 @@ requirements:
     - r-summarywidget
     - r-rlogging
     - r-crosstalk
+    - r-forcats
 
 test:
   commands:
