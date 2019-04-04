@@ -51,7 +51,6 @@ def __main__():
    if args.force_overwrite is True:
       overwrite = 1
 
-
    ## Required arguments
    ## Check the existence of required arguments
    if arg_dict['track_dir'] is None or not os.path.exists(arg_dict['track_dir']):
@@ -93,10 +92,13 @@ def __main__():
    input_aln_host = "NA"
    input_aln_index_host = "NA"
    input_target_host = "NA"
+   input_fa_host = "NA"
    if host_directories['input_alndir'] != 'NA':
       input_aln_host = os.path.join(host_directories['input_alndir'], host_directories['input_aln_basename'])
    if host_directories['input_aln_index_basename'] != 'NA':
-      input_aln_index_host = os.path.join(host_directories['input_alndir'], host_directories['input_aln_index_basename']) 
+      input_aln_index_host = os.path.join(host_directories['input_alndir'], host_directories['input_aln_index_basename'])
+   if host_directories['input_fa_basename'] != 'NA':
+      input_fa_host = os.path.join(host_directories['input_fa_dir'], host_directories['input_fa_basename'])
 
    logger.info('Running cacao workflow - assessment of coverage at actionable and pathogenic loci')
 
@@ -118,11 +120,14 @@ def __main__():
                       '/workdir/tracks ' + \
                       '/workdir/output ' + \
                       cacao_py_nonpath_params
+      if args.ref_fasta:
+         cacao_command += ' --ref-fasta /workdir/ref.fa'
       docker_command = 'docker run --rm -ti -w=/workdir/output ' + \
                        '-v=' + str(host_directories['track_dir']) + ':/workdir/tracks ' + \
                        '-v=' + str(host_directories['output_dir']) + ':/workdir/output ' + \
                        '-v=' + str(input_aln_host) + ':/workdir/query.bam ' + \
-                       '-v=' + str(input_aln_index_host) + ':/workdir/query.bam.bai '
+                       '-v=' + str(input_aln_index_host) + ':/workdir/query.bam.bai ' + \
+                       '-v=' + str(input_fa_host) + ':/workdir/ref.fa '
       if host_directories['input_target_dir'] != "NA" and host_directories['input_target_basename'] != "NA":
          input_target_host = os.path.join(host_directories['input_target_dir'], host_directories['input_target_basename'])
          docker_command += '-v' + str(input_target_host) + ':/workdir/query_target.bed '
@@ -139,6 +144,8 @@ def __main__():
                       str(host_directories['output_dir']) + ' ' + \
                       cacao_py_nonpath_params + \
                       ' --no-docker'
+      if args.ref_fasta:
+         cacao_command += ' --ref-fasta ' + input_fa_host
       run_cacao_cmd = cacao_command
 
    check_subprocess(run_cacao_cmd)
@@ -153,7 +160,12 @@ def error_message(message, logger):
 def warn_message(message, logger):
    logger.warning(message)
 
+<<<<<<< HEAD
 def verify_input_files(arg_dict, logger):
+=======
+def verify_arguments(query_alignment_fname, query_target_fname, track_directory, output_dir, sample_id, genome_assembly,
+                     callability_levels_germline, callability_levels_somatic, overwrite, logger, query_fa_fname=None):
+>>>>>>> CRAM support: add command line option for ref fasta
    """
    Function that checks the input files and directories provided by the user and checks for their existence
    """
@@ -173,6 +185,8 @@ def verify_input_files(arg_dict, logger):
    input_aln_index_basename = "NA"
    output_dir_full = "NA"
    track_dir_full = "NA"
+   input_fa_dir = "NA"
+   input_fa_basename = "NA"
 
    overwrite = 0
    if arg_dict['force_overwrite'] is True:
@@ -232,12 +246,21 @@ def verify_input_files(arg_dict, logger):
          if not os.path.exists(arg_dict['query_aln'] + str('.crai')):
             err_msg = "CRAM index file (" + str(arg_dict['query_aln']) + ".crai) does not exist"
             error_message(err_msg,logger)
+         if not query_fa_fname:
+            err_msg = "CRAM requires reference fasta"
+            error_message(err_msg,logger)
+         if not os.path.exists(query_fa_fname):
+            err_msg = "Reference fasta (" + str(query_fa_fname) + ") does not exist"
+            error_message(err_msg,logger)
 
       input_aln_basename = os.path.basename(str(arg_dict['query_aln']))
       input_aln_dir = os.path.dirname(os.path.abspath(arg_dict['query_aln']))
       input_aln_index_basename = input_aln_basename + '.bai'
       if bam == 0:
          input_aln_index_basename = input_aln_basename + '.crai'
+
+      input_fa_basename = os.path.basename(str(query_fa_fname))
+      input_fa_dir = os.path.dirname(os.path.abspath(query_fa_fname))
 
       ##MISSING OVERWRITE CHECK FOR EXISTING OUTPUT FILES
        
@@ -249,7 +272,9 @@ def verify_input_files(arg_dict, logger):
    host_directories['input_aln_index_basename'] = input_aln_index_basename
    host_directories['input_target_dir'] = input_target_dir
    host_directories['input_target_basename'] = input_target_basename
-   
+   host_directories['input_fa_basename'] = input_fa_basename
+   host_directories['input_fa_dir'] = input_fa_dir
+
    return host_directories
    
 
