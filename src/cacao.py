@@ -29,6 +29,7 @@ def __main__():
    parser.add_argument('callability_levels_somatic', default="0:30:200", help="Intervals of sequencing depth denoting e.g. NO_COVERAGE (0), LOW_COVERAGE (1-29), CALLABLE (30-199), HIGH_COVERAGE (>= 200)")
    parser.add_argument('--prbase', action = "store_true", help='By default, the cacao workflow will only assess coverage at clinically relevant variant loci in cancer. This option enables a full coverage calculation of the alignment (will increase runtime substantially)')
    parser.add_argument('--no-docker', action='store_true', dest='no_docker', default=False, help='Run the workflow in a non-Docker mode (see install_no_docker/ folder for instructions')
+   parser.add_argument('--ref-fasta', dest="ref_fasta", help='Reference fasta (for CRAM)')
 
 
    args = parser.parse_args()
@@ -62,15 +63,17 @@ def __main__():
          '--no-per-base ' \
          '--by ' + regions_bed + \
          ' --mapq ' + str(args.mapq) + \
-         ' --threads ' + str(args.threads) + ' ' + \
-         out_prefix + str(sample_postfix) + ' ' + \
-         str(args.aln)
+         ' --threads ' + str(args.threads) + \
+         ((' --fasta ' + str(args.ref_fasta)) if args.ref_fasta else '') + \
+         ' ' + out_prefix + str(sample_postfix) + \
+         ' ' + str(args.aln)
       mosdepth_prbase_cmd = \
          'mosdepth ' \
          '--mapq ' + str(args.mapq) + \
-         ' --threads ' + str(args.threads) + ' ' + \
-         out_prefix + str(sample_postfix_prbase) + ' ' + \
-         str(args.aln)
+         ' --threads ' + str(args.threads) + \
+         ((' --fasta ' + str(args.ref_fasta)) if args.ref_fasta else '') + \
+         ' ' + out_prefix + str(sample_postfix_prbase) + \
+         ' ' + str(args.aln)
       logger.info('command: ' + str(mosdepth_cmd))
       check_subprocess(mosdepth_cmd)
       if args.prbase is True:
