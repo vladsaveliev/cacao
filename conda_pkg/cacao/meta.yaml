@@ -16,8 +16,8 @@ build:
 
 requirements:
   build:
-    - python =3.7
-    - r-base =4.0.2
+    - python
+    - r-base
     - curl
     - unzip
     - tar
@@ -43,8 +43,6 @@ requirements:
     - r-forcats
 
   run:
-    - python =3.7
-    - r-base =4.0.2
     - bedtools
     - htslib
     - numpy
