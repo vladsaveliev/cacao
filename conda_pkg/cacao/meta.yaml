@@ -16,18 +16,17 @@ build:
 
 requirements:
   build:
+    - python
+    - r-base
     - curl
     - unzip
-    - r-base
-    - r-devtools
     - tar
-    - python
     - toml
     - pip
     - setuptools
     #
     ### Need R modules to install the cacao R package during build-time
-    - libgfortran-ng  # to fix -libgfortran error, thanks @pdiakumis
+    - r-devtools
     - r-rmarkdown
     - r-configr
     - r-dplyr
@@ -42,7 +41,6 @@ requirements:
     - r-rlogging
     - r-crosstalk
     - r-forcats
-    - r-openssl >=1.1
 
   run:
     - bedtools
@@ -57,7 +55,6 @@ requirements:
     - mosdepth
     - tabix
     - pandoc
-    - libgfortran-ng  # to fix -libgfortran error, thanks @pdiakumis
     - r-rmarkdown
     - r-configr
     - r-dplyr
@@ -72,7 +69,6 @@ requirements:
     - r-rlogging
     - r-crosstalk
     - r-forcats
-    - r-openssl >=1.1
 
 test:
   commands:
