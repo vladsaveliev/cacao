@@ -160,12 +160,7 @@ def error_message(message, logger):
 def warn_message(message, logger):
    logger.warning(message)
 
-<<<<<<< HEAD
 def verify_input_files(arg_dict, logger):
-=======
-def verify_arguments(query_alignment_fname, query_target_fname, track_directory, output_dir, sample_id, genome_assembly,
-                     callability_levels_germline, callability_levels_somatic, overwrite, logger, query_fa_fname=None):
->>>>>>> CRAM support: add command line option for ref fasta
    """
    Function that checks the input files and directories provided by the user and checks for their existence
    """
